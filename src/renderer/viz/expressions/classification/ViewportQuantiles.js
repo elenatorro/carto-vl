@@ -1,8 +1,8 @@
 import Classifier from './Classifier';
 import { checkNumber, checkType, checkMaxArguments, checkMinArguments, implicitCast } from '../utils';
-import CartoValidationError, { CartoValidationTypes as cvt } from '../../../../errors/carto-validation-error';
+import CartoValidationError, { CartoValidationErrorTypes } from '../../../../errors/carto-validation-error';
 
-import { viewportHistogram } from '../../expressions';
+import { viewportHistogram, viewportMin, viewportMax } from '../../expressions';
 import { DEFAULT_HISTOGRAM_SIZE } from './Classifier';
 
 /**
@@ -36,6 +36,7 @@ export default class ViewportQuantiles extends Classifier {
         checkMinArguments(arguments, 2, 'viewportQuantiles');
         checkMaxArguments(arguments, 3, 'viewportQuantiles');
         input = implicitCast(input);
+
         super({ input, buckets, _histogramSize: histogramSize });
     }
 
@@ -50,7 +51,11 @@ export default class ViewportQuantiles extends Classifier {
 
         const input = this.input;
         const histogramSize = this._histogramSize.value;
-        const children = { _histogram: viewportHistogram(input, histogramSize) };
+        const min = viewportMin(input);
+        const max = viewportMax(input);
+        const _histogram = viewportHistogram(input, histogramSize);
+
+        const children = { min, max, _histogram };
         this._initializeChildren(children);
     }
 
@@ -58,7 +63,10 @@ export default class ViewportQuantiles extends Classifier {
         const histogramSize = this._histogramSize.value;
         checkNumber(this.expressionName, 'histogramSize', 2, histogramSize);
         if (histogramSize <= 0) {
-            throw new CartoValidationError(`${cvt.INCORRECT_VALUE} The 'histogramSize' must be > 0, but ${histogramSize} was used`);
+            throw new CartoValidationError(
+                `The 'histogramSize' must be > 0, but ${histogramSize} was used`,
+                CartoValidationErrorTypes.INCORRECT_VALUE
+            );
         }
     }
 
@@ -96,7 +104,7 @@ export default class ViewportQuantiles extends Classifier {
                 }
             }
             const percentileValue = i / histogramBuckets * (max - min) + min;
-            breakpoint.expr = percentileValue;
+            breakpoint.value = percentileValue;
         });
     }
 

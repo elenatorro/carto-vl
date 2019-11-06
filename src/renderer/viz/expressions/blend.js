@@ -1,7 +1,7 @@
 import { implicitCast, clamp, mix, checkType, checkExpression, checkMaxArguments } from './utils';
 import Transition from './transition';
 import BaseExpression from './base';
-import CartoValidationError, { CartoValidationTypes as cvt } from '../../../errors/carto-validation-error';
+import CartoValidationError, { CartoValidationErrorTypes } from '../../../errors/carto-validation-error';
 
 /**
  * Linearly interpolate from `a` to `b` based on `mix`.
@@ -57,12 +57,23 @@ export default class Blend extends BaseExpression {
         }
         this.inlineMaker = inline => `mix(${inline.a}, ${inline.b}, clamp(${inline.mix}, 0., 1.))`;
     }
+
+    get value () {
+        const a = clamp(this.mix.value, 0, 1);
+        const x = this.a.value;
+        const y = this.b.value;
+
+        return mix(x, y, a);
+    }
+
     eval (feature) {
         const a = clamp(this.mix.eval(feature), 0, 1);
         const x = this.a.eval(feature);
         const y = this.b.eval(feature);
+
         return mix(x, y, a);
     }
+
     replaceChild (toReplace, replacer) {
         if (toReplace === this.mix) {
             this.originalMix = replacer;
@@ -77,6 +88,7 @@ export default class Blend extends BaseExpression {
 
         this.type = this.a.type;
     }
+
     _preDraw (...args) {
         super._preDraw(...args);
         if (this.originalMix.isA(Transition) && !this.originalMix.isAnimated()) {
@@ -86,9 +98,12 @@ export default class Blend extends BaseExpression {
 }
 
 function abTypeCheck (a, b) {
-    const validTypes = ['number', 'color', 'image', 'placement'];
+    const validTypes = ['number', 'color', 'image', 'placement', 'date'];
 
     if (a.type !== b.type || !(validTypes.includes(a.type))) {
-        throw new CartoValidationError(`${cvt.INCORRECT_TYPE} blend(): invalid parameter types\n\t'a' type was '${a.type}'\n\t'b' type was '${b.type}'`);
+        throw new CartoValidationError(
+            `blend(): invalid parameter types\n\t'a' type was '${a.type}'\n\t'b' type was '${b.type}'`,
+            CartoValidationErrorTypes.INCORRECT_TYPE
+        );
     }
 }

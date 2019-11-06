@@ -1,6 +1,6 @@
 import shaders from './shaders';
 import { Asc, Desc } from './viz/expressions';
-import CartoRuntimeError, { CartoRuntimeTypes as runtimeErrors } from '../errors/carto-runtime-error';
+import CartoRuntimeError, { CartoRuntimeErrorTypes } from '../errors/carto-runtime-error';
 import { mat4 } from 'gl-matrix';
 import { RESOLUTION_ZOOMLEVEL_ZERO } from '../constants/layer';
 import { parseVizExpression } from './viz/parser';
@@ -35,6 +35,8 @@ export const FILTERING_THRESHOLD = 0.5;
  * Large values imply a small overhead too.
  */
 export const RTT_WIDTH = 1024;
+
+export const MIN_VERTEX_TEXTURE_IMAGE_UNITS_NEEDED = 8;
 
 /**
  * @description Renderer constructor. Use it to create a new renderer bound to the provided canvas.
@@ -145,7 +147,7 @@ export default class Renderer {
             const textureId = metashader.textureIds;
 
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dataframeTexture, 0);
-            gl.viewport(0, 0, RTT_WIDTH, dataframe.height);
+            gl.viewport(0, 0, RTT_WIDTH, dataframe.getSize().height);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
             gl.useProgram(shader.program);
@@ -437,13 +439,13 @@ export function unsupportedBrowserReasons (canvas, gl, early = false) {
         gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
     }
     if (!gl) {
-        reasons.push(new CartoRuntimeError(`${runtimeErrors.WEB_GL} WebGL 1 is unsupported`));
+        reasons.push(new CartoRuntimeError('WebGL 1 is unsupported', CartoRuntimeErrorTypes.WEB_GL));
         return reasons;
     }
 
     const OESTextureFloat = gl.getExtension('OES_texture_float');
     if (!OESTextureFloat) {
-        reasons.push(new CartoRuntimeError(`${runtimeErrors.WEB_GL} WebGL extension 'OES_texture_float' is unsupported`));
+        reasons.push(new CartoRuntimeError('WebGL extension \'OES_texture_float\' is unsupported', CartoRuntimeErrorTypes.WEB_GL));
         if (early) {
             return reasons;
         }
@@ -451,7 +453,22 @@ export function unsupportedBrowserReasons (canvas, gl, early = false) {
 
     const supportedRTT = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE);
     if (supportedRTT < RTT_WIDTH) {
-        reasons.push(new CartoRuntimeError(`${runtimeErrors.WEB_GL} WebGL parameter 'gl.MAX_RENDERBUFFER_SIZE' is below the requirement: ${supportedRTT} < ${RTT_WIDTH}`));
+        reasons.push(
+            new CartoRuntimeError(
+                `WebGL parameter 'gl.MAX_RENDERBUFFER_SIZE' is below the requirement: ${supportedRTT} < ${RTT_WIDTH}`,
+                CartoRuntimeErrorTypes.WEB_GL
+            )
+        );
+    }
+
+    const vertexTextureImageUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
+    if (vertexTextureImageUnits < MIN_VERTEX_TEXTURE_IMAGE_UNITS_NEEDED) {
+        reasons.push(
+            new CartoRuntimeError(
+                `WebGL parameter 'gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS' is below the requirement: ${vertexTextureImageUnits} < ${MIN_VERTEX_TEXTURE_IMAGE_UNITS_NEEDED}`,
+                CartoRuntimeErrorTypes.WEB_GL
+            )
+        );
     }
 
     return reasons;

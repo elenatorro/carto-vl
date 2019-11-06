@@ -1,7 +1,7 @@
 import { implicitCast } from './utils';
 import { blend, transition } from '../expressions';
 import * as schema from '../../schema';
-import CartoValidationError, { CartoValidationTypes as cvt } from '../../../errors/carto-validation-error';
+import CartoValidationError, { CartoValidationErrorTypes } from '../../../errors/carto-validation-error';
 import CartoRuntimeError from '../../../errors/carto-runtime-error';
 
 /**
@@ -65,19 +65,30 @@ export default class Base {
      * // `color` will have the same color as the features with an amount of 123
      *
      */
-    eval (feature) {
-        throw new CartoRuntimeError('Unimplemented');
+    eval () {
+        return this.value;
     }
 
     /**
-     * Get the expression value
+     * Get the expression value. It gets the data from the `getLegendData` method.
      *
      * @api
      * @memberof Expression
      * @name value
-     */
+    */
     get value () {
-        return this.eval();
+        throw new CartoRuntimeError('Must evaluate a feature using .eval(feature)');
+    }
+
+    /**
+     * Get the expression values
+     *
+     * @api
+     * @memberof Expression
+     * @name values
+     */
+    get values () {
+        return this.getLegendData().data;
     }
 
     /**
@@ -176,6 +187,17 @@ export default class Base {
         return this._getChildren().map(child => child.propertyName).find(name => !!name);
     }
 
+    /**
+     * Get information data from the expression.
+     *
+     * @api
+     * @memberof Expression
+     * @name getLegendData
+     * @typedef {String} PropertyName
+     * @typedef {Array} LegendData
+     * @returns {Object} - { PropertyName, LegendData }
+     * @instance
+    */
     getLegendData () {
         return {
             name: this.propertyName,
@@ -199,7 +221,8 @@ export default class Base {
     _initializeChildrenArray (children) {
         if (this.maxParameters && this.maxParameters < children.length) {
             throw new CartoValidationError(
-                `${cvt.TOO_MANY_ARGS} Extra parameters, got ${children.length} but maximum is ${this.maxParameters}`
+                `Extra parameters, got ${children.length} but maximum is ${this.maxParameters}`,
+                CartoValidationErrorTypes.TOO_MANY_ARGS
             );
         }
 
@@ -220,7 +243,7 @@ export default class Base {
 
         if (this.maxParameters && this.maxParameters < this.childrenNames.length) {
             throw new CartoValidationError(
-                `${cvt.TOO_MANY_ARGS} Extra parameters, got ${this.childrenNames.length} but maximum is ${this.maxParameters}`
+                CartoValidationErrorTypes.TOO_MANY_ARGS, `Extra parameters, got ${this.childrenNames.length} but maximum is ${this.maxParameters}`
             );
         }
 

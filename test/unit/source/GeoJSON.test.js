@@ -1,5 +1,5 @@
 import GeoJSON from '../../../src/sources/GeoJSON';
-import { CartoValidationTypes as cvt } from '../../../src/errors/carto-validation-error';
+import { CartoValidationErrorTypes } from '../../../src/errors/carto-validation-error';
 import { regExpThatContains as thatContains } from '../../../src/utils/util';
 
 describe('sources/GeoJSON', () => {
@@ -103,11 +103,12 @@ describe('sources/GeoJSON', () => {
             }]);
         });
 
-        it('should compute the center of the coordintates', () => {
+        it('should compute the center of the coordinates', () => {
             const source = new GeoJSON(createData());
-            expect(source._dataframeCenter).toBeDefined();
-            expect(source._dataframeCenter.x).toBeCloseTo(0.0555);
-            expect(source._dataframeCenter.x).toBeCloseTo(0.0567);
+            const dataframeCenter = source._getDataframeCenter();
+            expect(dataframeCenter).toBeDefined();
+            expect(dataframeCenter.x).toBeCloseTo(0.0555);
+            expect(dataframeCenter.y).toBeCloseTo(0.0567);
         });
 
         it('should compute metadata for numeric and category properties', done => {
@@ -157,21 +158,21 @@ describe('sources/GeoJSON', () => {
             });
         });
 
-        it('should throw an error if data is not valid', function () {
-            expect(function () {
+        it('should throw an error if data is not valid', () => {
+            expect(() => {
                 new GeoJSON();
-            }).toThrowError(thatContains(cvt.MISSING_REQUIRED + ' \'data\''));
+            }).toThrowError(thatContains(CartoValidationErrorTypes.MISSING_REQUIRED + ' \'data\''));
 
-            expect(function () {
+            expect(() => {
                 new GeoJSON(1234);
-            }).toThrowError(thatContains(cvt.INCORRECT_TYPE + ' \'data\' property must be an object.'));
+            }).toThrowError(thatContains(CartoValidationErrorTypes.INCORRECT_TYPE + ' \'data\' property must be an object.'));
 
-            expect(function () {
+            expect(() => {
                 new GeoJSON({});
-            }).toThrowError(thatContains(cvt.INCORRECT_VALUE + ' \'data\' property must be a GeoJSON object.'));
+            }).toThrowError(thatContains(CartoValidationErrorTypes.INCORRECT_VALUE + ' \'data\' property must be a GeoJSON object.'));
         });
 
-        it('should throw an error if data has different feature types', function () {
+        it('should throw an error if data has different feature types', () => {
             const source = new GeoJSON({
                 type: 'FeatureCollection',
                 features: [{
@@ -189,13 +190,59 @@ describe('sources/GeoJSON', () => {
                     }
                 }]
             });
-            expect(function () {
+            expect(() => {
                 source.requestData();
-            }).toThrowError(thatContains(cvt.INCORRECT_TYPE + ' multiple geometry types not supported: found \'LineString\' instead of \'Point\'.'));
+            }).toThrowError(thatContains(CartoValidationErrorTypes.INCORRECT_TYPE + ' multiple geometry types not supported: found \'line\' instead of \'point\'.'));
+        });
+
+        it('should not thrown an error if data contains Lines and MultiLines', () => {
+            const source = new GeoJSON({
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: [[0, 0, [1, 1]]]
+                    }
+                },
+                {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'MultiLineString',
+                        coordinates: [[[0, 0], [1, 1]]]
+                    }
+                }]
+            });
+            expect(() => {
+                source.requestData();
+            }).not.toThrowError();
+        });
+
+        it('should not thrown an error if data contains Polygon and MultiPolygons', () => {
+            const source = new GeoJSON({
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [[[0, 0], [1, 1], [2, 2]]]
+                    }
+                },
+                {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'MultiPolygon',
+                        coordinates: [[[[0, 0], [1, 1], [2, 2]]]]
+                    }
+                }]
+            });
+            expect(() => {
+                source.requestData();
+            }).not.toThrowError();
         });
 
         describe('decodeGeometry', () => {
-            it('should load a cw polygon', function () {
+            it('should load a cw polygon', () => {
                 const source = new GeoJSON({
                     type: 'Feature',
                     geometry: {
@@ -219,7 +266,7 @@ describe('sources/GeoJSON', () => {
                 actualHoles.forEach((x, i) => expect(x).toBe(expectedHoles[i]));
             });
 
-            it('should load a ccw polygon', function () {
+            it('should load a ccw polygon', () => {
                 const source = new GeoJSON({
                     type: 'Feature',
                     geometry: {

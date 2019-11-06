@@ -1,7 +1,8 @@
 import Classifier from './Classifier';
 import { checkExactNumberOfArguments } from '../utils';
 import { CLUSTER_FEATURE_COUNT } from '../../../../constants/metadata';
-import CartoValidationError, { CartoValidationTypes as cvt } from '../../../../errors/carto-validation-error';
+import CartoValidationError, { CartoValidationErrorTypes } from '../../../../errors/carto-validation-error';
+import { number } from '../../expressions';
 
 /**
  * Classify `input` by using the equal intervals method with `n` buckets.
@@ -36,23 +37,25 @@ export default class GlobalEqIntervals extends Classifier {
 
     _bindMetadata (metadata) {
         super._bindMetadata(metadata);
-
         this._updateBreakpointsWith(metadata);
     }
 
     _updateBreakpointsWith (metadata) {
         if (this.input.propertyName === CLUSTER_FEATURE_COUNT) {
-            throw new CartoValidationError(`${cvt.INCORRECT_TYPE} 'clusterCount' can not be used in GlobalEqIntervals. Consider using ViewportEqIntervals instead`);
+            throw new CartoValidationError(
+                '\'clusterCount\' can not be used in GlobalEqIntervals. Consider using ViewportEqIntervals instead',
+                CartoValidationErrorTypes.INCORRECT_TYPE
+            );
         }
 
         const name = this.input.name;
         const { min, max } = metadata.stats(name);
-        this.min = min;
-        this.max = max;
+        this.min = number(min);
+        this.max = number(max);
 
         this.breakpoints.map((breakpoint, index) => {
             const p = (index + 1) / this.numCategories;
-            breakpoint.expr = min + (max - min) * p;
+            breakpoint.value = min + (max - min) * p;
         });
     }
 }

@@ -64,6 +64,11 @@ export default class AnimationGeneral extends BaseExpression {
             this._paused = 'default';
         }
     }
+
+    toString () {
+        return `${this.expressionName}(${this._input.toString()}, ${this.duration.toString()}, ${this.fade.toString()})`;
+    }
+
     _bindMetadata (metadata) {
         this._input._bindMetadata(metadata);
         this.progress._bindMetadata(metadata);
@@ -137,7 +142,7 @@ export default class AnimationGeneral extends BaseExpression {
             return;
         }
 
-        this.progress.expr = (this.progress.expr + speed * deltaTime) % 1;
+        this.progress.value = (this.progress.value + speed * deltaTime) % 1;
     }
 
     eval (feature) {
@@ -181,7 +186,7 @@ export default class AnimationGeneral extends BaseExpression {
      * @api
      */
     getProgressValue () {
-        const progress = this.progress.eval();
+        const progress = this.progress.value;
         return this._input.converse(progress);
     }
 
@@ -204,7 +209,7 @@ export default class AnimationGeneral extends BaseExpression {
             throw new RangeError('animation.setTimestamp requires the date parameter to be lower than the higher limit');
         }
 
-        this.progress.expr = (date.getTime() - tmin) / (tmax - tmin);
+        this.progress.value = (date.getTime() - tmin) / (tmax - tmin);
     }
 
     /**
@@ -235,7 +240,7 @@ export default class AnimationGeneral extends BaseExpression {
             throw new TypeError(`animation.setProgressPct requires a number between 0 and 1 as parameter but got: ${progress}`);
         }
 
-        this.progress.expr = progress;
+        this.progress.value = progress;
     }
 
     /**
@@ -284,7 +289,7 @@ export default class AnimationGeneral extends BaseExpression {
      * @name stop
      */
     stop () {
-        this.progress.expr = 0;
+        this.progress.value = 0;
         this._paused = true;
     }
 }

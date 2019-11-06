@@ -275,7 +275,7 @@ width: sqrt(clusterSum($pop_max) / 5000) + 5
 
 In the previous expression, the aggregated population in the cluster is used to determine the circle size (helped with some maths to manually adjust values to pixels).
 
-But if you just replace that property in the current `viz` configuration, you'll get a `CartoValidationError: [Incorrect value]: Incompatible combination of cluster aggregation usages`, because you are mixing aggregated and unaggregated usages of the same property *pop_max*. So it is better if you just simplify the viz.
+But if you just replace that property in the current `viz` configuration, you'll get a `CartoValidationError: [Incorrect value] Incompatible combination of cluster aggregation usages`, because you are mixing aggregated and unaggregated usages of the same property *pop_max*. So it is better if you just simplify the viz.
 
 Change your `viz` code to this:
 ```js
@@ -312,8 +312,8 @@ This is the complete code:
 <head>
     <meta charset="utf-8">
     <script src="https://libs.cartocdn.com/carto-vl/%VERSION%/carto-vl.min.js"></script>
-    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.js"></script>
-    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.js"></script>
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="../../style.css">
     <!-- Numeral.js for number formatting -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>

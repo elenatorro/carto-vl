@@ -1,12 +1,77 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.4.2] 2019-24-10
 
-## [1.2.2] - 2019-03-21
+### Fixed
+- Lower minimum MAX_VERTEX_TEXTURE_IMAGE_UNITS requirement
+
+## [1.4.1] 2019-23-07
+
+### Fixed
+- Fix feature viz property value
+- Fix `toString` method in animation expression
+- Fix `carto.isBrowserSupported` adding a required check on MAX_VERTEX_TEXTURE_IMAGE_UNITS
+
+### Added
+- Support dates in binary expressions
+
+## [1.4.0] 2019-15-07
+
+### Fixed
+- Fix `value`, `eval()` and `getLegendData()` for binary operations
+- Support mixed multi geometries in GeoJSON: LineString & MultiLineString, Polygon & MultiPolygon
+- Support dates in Histogram expressions
+
+## [1.3.1] 2019-06-17
+
+### Fixed
+- Remove Infinity numbers from Classifiers `getLegendData()` method
+- Change `numBuckets` getter to a method in `top` expression
+
+## [1.3.0] 2019-06-03
+
+## Added
+- `removed` event for Layer instances
+
+### Changed
+- Internal refactoring regarding data sources (GeoJSON and Windshaft) and Dataframe
+- Unify `.value`, `.eval()` and `.getLegendData()` methods to get expression values
+- Upgrade to use Mapbox GL version 1.0.0
+
+### Fixed
+- Deregister removed layers in interactivity
+- Remove map listeners when there are no layers remaining in interactivity
+- Do not always add CARTO_VL_OTHERS when getting legend data from the buckets expression
+- Fix memory exhausted error using `buckets` with a long list
+
+## [1.2.6] 2019-05-27
+
+### Changed
+- Add fullscreen control to all public examples
+
+## [1.2.5] - 2019-04-25
+
+### Changed
+- Add error types for exceptions
+
+### Fixed
+- Load built-in icons from CDN to make them work on FireFox
+
+## [1.2.4] - 2019-03-29
+
+### Added
+- Update workflow documentation
+- Update info about browser support and WebGL
+
+### Fixed
+- Change interactive classification example
+
+## [1.2.3] - 2019-03-21
 
 ### Added
 - Allow the use of variables for all classifiers: `globalQuantiles`, `globalEqIntervals`, `globalStandardDev`, `viewportQuantiles`, `viewportEqIntervals` and `viewportStandardDev`

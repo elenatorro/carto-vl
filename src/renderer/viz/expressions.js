@@ -451,20 +451,21 @@ import { Nin } from './expressions/belongs';
 
 import Between from './expressions/between';
 
-import { Mul } from './expressions/binary';
-import { Div } from './expressions/binary';
-import { Add } from './expressions/binary';
-import { Sub } from './expressions/binary';
-import { Mod } from './expressions/binary';
-import { Pow } from './expressions/binary';
-import { GreaterThan } from './expressions/binary';
-import { GreaterThanOrEqualTo } from './expressions/binary';
-import { LessThan } from './expressions/binary';
-import { LessThanOrEqualTo } from './expressions/binary';
-import { Equals } from './expressions/binary';
-import { NotEquals } from './expressions/binary';
-import { Or } from './expressions/binary';
-import { And } from './expressions/binary';
+// Binary Operations
+import Add from './expressions/binary/Add';
+import And from './expressions/binary/And';
+import Div from './expressions/binary/Div';
+import Equals from './expressions/binary/Equals';
+import GreaterThan from './expressions/binary/GreaterThan';
+import GreaterThanOrEqualTo from './expressions/binary/GreaterThanOrEqualTo';
+import LessThan from './expressions/binary/LessThan';
+import LessThanOrEqualTo from './expressions/binary/LessThanOrEqualTo';
+import Mod from './expressions/binary/Mod';
+import Mul from './expressions/binary/Mul';
+import NotEquals from './expressions/binary/NotEquals';
+import Or from './expressions/binary/Or';
+import Pow from './expressions/binary/Pow';
+import Sub from './expressions/binary/Sub';
 
 import Blend from './expressions/blend';
 
@@ -582,6 +583,11 @@ import Rotate from './expressions/transformation/Rotate';
 
 /* Expose classes as constructor functions */
 
+export const number = (...args) => new BaseNumber(...args);
+export const category = (...args) => new BaseCategory(...args);
+export const list = (...args) => new List(...args);
+export const rgb = (...args) => new RGB(...args);
+export const rgba = (...args) => new RGBA(...args);
 export const transition = (...args) => new Transition(...args);
 
 const in_ = (...args) => new In(...args);
@@ -644,13 +650,10 @@ export const cubic = (...args) => new Cubic(...args);
 export const ilinear = (...args) => new ILinear(...args);
 
 export const linear = (...args) => new Linear(...args);
-export const list = (...args) => new List(...args);
 
 export const namedColor = (...args) => new NamedColor(...args);
 
 export const now = (...args) => new Now(...args);
-
-export const number = (...args) => new BaseNumber(...args);
 
 export const opacity = (...args) => new Opacity(...args);
 
@@ -674,11 +677,6 @@ export const globalStandardDev = (...args) => new GlobalStandardDev(...args);
 export const viewportStandardDev = (...args) => new ViewportStandardDev(...args);
 
 export const ramp = (...args) => new Ramp(...args);
-
-export const rgb = (...args) => new RGB(...args);
-export const rgba = (...args) => new RGBA(...args);
-
-export const category = (...args) => new BaseCategory(...args);
 
 export const time = (...args) => new Time(...args);
 export { time as date };
@@ -736,24 +734,24 @@ export const FALSE = new Constant(0);
 export const PI = new Constant(Math.PI);
 export const E = new Constant(Math.E);
 
-export const BICYCLE = new SVG(svgs.bicycle);
-export const BUILDING = new SVG(svgs.building);
-export const BUS = new SVG(svgs.bus);
-export const CAR = new SVG(svgs.car);
-export const CIRCLE = new SVG(svgs.circle);
-export const CIRCLE_OUTLINE = new SVG(svgs.circleOutline);
-export const CROSS = new SVG(svgs.cross);
-export const FLAG = new SVG(svgs.flag);
-export const HOUSE = new SVG(svgs.house);
-export const MARKER = new SVG(svgs.marker);
-export const MARKER_OUTLINE = new SVG(svgs.markerOutline);
-export const PLUS = new SVG(svgs.plus);
-export const SQUARE = new SVG(svgs.square);
-export const SQUARE_OUTLINE = new SVG(svgs.squareOutline);
-export const STAR = new SVG(svgs.star);
-export const STAR_OUTLINE = new SVG(svgs.starOutline);
-export const TRIANGLE = new SVG(svgs.triangle);
-export const TRIANGLE_OUTLINE = new SVG(svgs.triangleOutline);
+export const BICYCLE = new Image(svgs.bicycle);
+export const BUILDING = new Image(svgs.building);
+export const BUS = new Image(svgs.bus);
+export const CAR = new Image(svgs.car);
+export const CIRCLE = new Image(svgs.circle);
+export const CIRCLE_OUTLINE = new Image(svgs.circleOutline);
+export const CROSS = new Image(svgs.cross);
+export const FLAG = new Image(svgs.flag);
+export const HOUSE = new Image(svgs.house);
+export const MARKER = new Image(svgs.marker);
+export const MARKER_OUTLINE = new Image(svgs.markerOutline);
+export const PLUS = new Image(svgs.plus);
+export const SQUARE = new Image(svgs.square);
+export const SQUARE_OUTLINE = new Image(svgs.squareOutline);
+export const STAR = new Image(svgs.star);
+export const STAR_OUTLINE = new Image(svgs.starOutline);
+export const TRIANGLE = new Image(svgs.triangle);
+export const TRIANGLE_OUTLINE = new Image(svgs.triangleOutline);
 
 export const ALIGN_CENTER = new Placement(constant(0), constant(0));
 export const ALIGN_BOTTOM = new Placement(constant(0), constant(1));

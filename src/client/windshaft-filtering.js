@@ -1,4 +1,11 @@
-import { And, Or, Equals, NotEquals, LessThan, LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo } from '../renderer/viz/expressions/binary';
+import GreaterThan from '../renderer/viz/expressions/binary/GreaterThan';
+import GreaterThanOrEqualTo from '../renderer/viz/expressions/binary/GreaterThanOrEqualTo';
+import LessThan from '../renderer/viz/expressions/binary/LessThan';
+import LessThanOrEqualTo from '../renderer/viz/expressions/binary/LessThanOrEqualTo';
+import And from '../renderer/viz/expressions/binary/And';
+import Or from '../renderer/viz/expressions/binary/Or';
+import Equals from '../renderer/viz/expressions/binary/Equals';
+import NotEquals from '../renderer/viz/expressions/binary/NotEquals';
 import { In, Nin } from '../renderer/viz/expressions/belongs';
 import Between from '../renderer/viz/expressions/between';
 import Property from '../renderer/viz/expressions/basic/property';
@@ -93,7 +100,7 @@ class AggregationFiltering {
     _value (f) {
         f = this._removeBlend(f);
         if (f.isA(NumberExpression) || f.isA(ConstantExpression) || f.isA(CategoryExpression)) {
-            return f.expr;
+            return f.value;
         }
     }
 
@@ -346,7 +353,7 @@ class PreaggregationFiltering {
         if (f.isA(NumberExpression) || f.isA(ConstantExpression) || f.isA(CategoryExpression)) {
             return {
                 type: 'value',
-                value: f.expr
+                value: f.value
             };
         }
     }

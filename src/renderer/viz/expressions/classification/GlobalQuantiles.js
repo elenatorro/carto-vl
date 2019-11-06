@@ -1,7 +1,8 @@
 import Classifier from './Classifier';
 import { checkExactNumberOfArguments, checkType } from '../utils';
 import { CLUSTER_FEATURE_COUNT } from '../../../../constants/metadata';
-import CartoValidationError, { CartoValidationTypes as cvt } from '../../../../errors/carto-validation-error';
+import CartoValidationError, { CartoValidationErrorTypes } from '../../../../errors/carto-validation-error';
+import { number } from '../../expressions';
 
 /**
  * Classify `input` by using the quantiles method with `n` buckets.
@@ -31,6 +32,7 @@ import CartoValidationError, { CartoValidationTypes as cvt } from '../../../../e
 export default class GlobalQuantiles extends Classifier {
     constructor (input, buckets) {
         checkExactNumberOfArguments(arguments, 2, 'globalQuantiles');
+
         super({ input, buckets });
     }
 
@@ -45,16 +47,25 @@ export default class GlobalQuantiles extends Classifier {
 
     _updateBreakpointsWith (metadata) {
         if (this.input.propertyName === CLUSTER_FEATURE_COUNT) {
-            throw new CartoValidationError(`${cvt.INCORRECT_TYPE} 'clusterCount' can not be used in GlobalQuantiles. Consider using ViewportQuantiles instead`);
+            throw new CartoValidationError(
+                '\'clusterCount\' can not be used in GlobalQuantiles. Consider using ViewportQuantiles instead',
+                CartoValidationErrorTypes.INCORRECT_TYPE
+            );
         }
 
         const name = this.input.name;
+        const { min, max } = metadata.stats(name);
         const copy = metadata.sample.map(s => s[name]);
+
+        this.min = number(min);
+        this.max = number(max);
+
         copy.sort((x, y) => x - y);
 
-        this.breakpoints.map((breakpoint, index) => {
+        this.breakpoints = this.breakpoints.map((breakpoint, index) => {
             const p = (index + 1) / this.numCategories;
-            breakpoint.expr = copy[Math.floor(p * copy.length)];
+            breakpoint.value = copy[Math.floor(p * copy.length)];
+            return breakpoint;
         });
     }
 }

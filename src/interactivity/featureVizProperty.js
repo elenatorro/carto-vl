@@ -24,4 +24,15 @@ export default class FeatureVizProperty {
     get value () {
         return this._viz[this._propertyName].eval(this._properties);
     }
+
+    eval (...properties) {
+        const props = [];
+        properties.forEach((property) => {
+            const prop = {};
+            prop[property] = this._properties[property];
+            props.push(prop);
+        });
+
+        return this._viz[this._propertyName].eval(props);
+    }
 }

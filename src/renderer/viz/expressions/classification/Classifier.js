@@ -2,7 +2,7 @@ import BaseExpression from '../base';
 import { number } from '../../expressions';
 
 import { checkType, checkNumber } from '../utils';
-import CartoValidationError, { CartoValidationTypes as cvt } from '../../../../errors/carto-validation-error';
+import CartoValidationError, { CartoValidationErrorTypes } from '../../../../errors/carto-validation-error';
 import ClassifierGLSLHelper from './ClassifierGLSLHelper';
 
 export const DEFAULT_HISTOGRAM_SIZE = 1000;
@@ -15,6 +15,26 @@ export default class Classifier extends BaseExpression {
         this.type = 'category';
 
         this._GLSLhelper = new ClassifierGLSLHelper(this);
+    }
+
+    get value () {
+        return this.eval();
+    }
+
+    eval (feature) {
+        const inputValue = this.input.eval(feature);
+        const breakpoint = this.breakpoints.findIndex((breakpoint) => {
+            return inputValue <= breakpoint.value;
+        });
+
+        const divisor = this.numCategories - 1 || 1;
+        const index = breakpoint === -1 ? 1 : breakpoint / divisor;
+
+        return index;
+    }
+
+    toString () {
+        return `${this.expressionName}(${this.input.toString()}, ${this.numCategories})`;
     }
 
     _resolveAliases (aliases) {
@@ -55,7 +75,10 @@ export default class Classifier extends BaseExpression {
         const buckets = this.buckets.value;
         checkNumber(this.expressionName, 'buckets', 1, buckets);
         if (buckets <= 1) {
-            throw new CartoValidationError(`${cvt.INCORRECT_VALUE} The number of 'buckets' must be >=2, but ${buckets} was used`);
+            throw new CartoValidationError(
+                `The number of 'buckets' must be >=2, but ${buckets} was used`,
+                CartoValidationErrorTypes.INCORRECT_VALUE
+            );
         }
     }
 
@@ -69,35 +92,15 @@ export default class Classifier extends BaseExpression {
         checkType(this.expressionName, 'input', 0, 'number', this.input);
     }
 
-    toString () {
-        return `${this.expressionName}(${this.input.toString()}, ${this.numCategories})`;
-    }
-
-    get value () {
-        return this.breakpoints.map(br => br.expr);
-    }
-
-    eval (feature) {
-        const inputValue = this.input.eval(feature);
-        const breakpoint = this.breakpoints.findIndex((br) => {
-            return inputValue <= br.expr;
-        });
-
-        const divisor = this.numCategories - 1 || 1;
-        const index = breakpoint === -1 ? 1 : breakpoint / divisor;
-
-        return index;
-    }
-
-    getBreakpointList () {
+    _getBreakpointList () {
         this._genBreakpoints();
-        return this.breakpoints.map(br => br.expr);
+        return this.breakpoints.map(breakpoint => breakpoint.value);
     }
 
     _genBreakpoints () { }
 
     _applyToShaderSource (getGLSLforProperty) {
-        return this._GLSLhelper.applyToShaderSource(getGLSLforProperty);
+        return this._GLSLhelper ? this._GLSLhelper.applyToShaderSource(getGLSLforProperty) : null;
     }
 
     _preDraw (program, drawMetadata, gl) {
@@ -106,13 +109,15 @@ export default class Classifier extends BaseExpression {
     }
 
     getLegendData () {
-        const breakpoints = this.getBreakpointList();
+        const breakpoints = this._getBreakpointList();
         const breakpointsLength = breakpoints.length;
+        const legendMin = this.min.value;
+        const legendMax = this.max.value;
         const data = [];
 
         for (let i = 0; i <= breakpointsLength; i++) {
-            const min = breakpoints[i - 1] || Number.NEGATIVE_INFINITY;
-            const max = breakpoints[i] || Number.POSITIVE_INFINITY;
+            const min = breakpoints[i - 1] === 0 ? 0 : breakpoints[i - 1] || legendMin;
+            const max = breakpoints[i] === 0 ? 0 : breakpoints[i] || legendMax;
             const key = [min, max];
             const value = i / breakpointsLength;
             data.push({ key, value });
